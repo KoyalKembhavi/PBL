@@ -32,7 +32,7 @@ public class BlockchainService {
     private final TransactionService transactionService;
 
     public BlockchainService(TransactionService transactionService) {
-        this.web3j = Web3j.build(new HttpService("http://127.0.0.1:7545"));
+        // this.web3j = Web3j.build(new HttpService("http://127.0.0.1:7545"));
         this.transactionService = transactionService;
     }
 
