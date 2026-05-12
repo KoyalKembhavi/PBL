@@ -19,7 +19,7 @@ if (document.getElementById("landing-page")) {
 // Backend API integration
 // =========================
 // Use `var` to avoid temporal-dead-zone issues across page scripts.
-var API_BASE_URL = "http://localhost:8081";
+var API_BASE_URL = "https://sable-backend-aqvz.onrender.com";
 
 function getAuthToken() {
     const user = getCurrentUser();
@@ -220,13 +220,13 @@ function loadDashboard() {
 function handleLogout() {
     clearCurrentUser();
     // Clear any legacy session keys (older multi-page versions used sessionStorage).
-    try { sessionStorage.removeItem("blast_current_user"); } catch (e) {}
-    try { sessionStorage.removeItem("currentUser"); } catch (e) {}
-    try { localStorage.removeItem("blast_current_user"); } catch (e) {}
-    try { localStorage.removeItem("currentUser"); } catch (e) {}
+    try { sessionStorage.removeItem("blast_current_user"); } catch (e) { }
+    try { sessionStorage.removeItem("currentUser"); } catch (e) { }
+    try { localStorage.removeItem("blast_current_user"); } catch (e) { }
+    try { localStorage.removeItem("currentUser"); } catch (e) { }
 
     // Prevent back-navigation into protected pages: replace current history entry.
-    try { history.replaceState(null, "", "index.html"); } catch (e) {}
+    try { history.replaceState(null, "", "index.html"); } catch (e) { }
     window.location.replace("index.html");
 }
 
@@ -382,14 +382,14 @@ async function loadDashboardStats() {
     // Auditor gets a tampering status snapshot.
     let auditStatus = null;
     let lastVerifiedAt = null;
-    try { lastVerifiedAt = localStorage.getItem("lastVerifiedAt"); } catch (e) {}
+    try { lastVerifiedAt = localStorage.getItem("lastVerifiedAt"); } catch (e) { }
 
     if (roleUpper === "AUDITOR") {
         try {
             const verification = await apiRequest("/api/blockchain/verify?blockLimit=20", { auth: true });
             auditStatus = verification?.tamperingDetected ? "Tampering Detected" : "No Tampering";
             lastVerifiedAt = new Date().toLocaleString();
-            try { localStorage.setItem("lastVerifiedAt", lastVerifiedAt); } catch (e) {}
+            try { localStorage.setItem("lastVerifiedAt", lastVerifiedAt); } catch (e) { }
         } catch (e) {
             auditStatus = "Verify failed";
         }
@@ -762,7 +762,7 @@ function renderAuditTable(data) {
     data.forEach(tx => {
         tbody.innerHTML += `
             <tr class="border-b border-white/10">
-                <td class="py-2 pr-3 whitespace-nowrap">${tx.id.substring(0,12)}...</td>
+                <td class="py-2 pr-3 whitespace-nowrap">${tx.id.substring(0, 12)}...</td>
                 <td class="py-2 pr-3">${tx.sender}</td>
                 <td class="py-2 pr-3">${tx.receiver}</td>
                 <td class="py-2 pr-3 text-green-300 whitespace-nowrap">$${tx.amount.toFixed(2)}</td>
