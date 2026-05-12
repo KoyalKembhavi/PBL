@@ -1,12 +1,12 @@
-package com.example.sable.blockchain;
+package com.example.SABLE.blockchain;
 
-import com.example.sable.dto.GanacheBlockDto;
-import com.example.sable.dto.GanacheTxDto;
-import com.example.sable.dto.BlockchainVerificationDto;
-import com.example.sable.dto.TransactionIntegrityFindingDto;
-import com.example.sable.integrity.TransactionIntegritySnapshot;
-import com.example.sable.model.Transaction;
-import com.example.sable.service.TransactionService;
+import com.example.SABLE.dto.GanacheBlockDto;
+import com.example.SABLE.dto.GanacheTxDto;
+import com.example.SABLE.dto.BlockchainVerificationDto;
+import com.example.SABLE.dto.TransactionIntegrityFindingDto;
+import com.example.SABLE.integrity.TransactionIntegritySnapshot;
+import com.example.SABLE.model.Transaction;
+import com.example.SABLE.service.TransactionService;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.WalletUtils;
@@ -32,7 +32,7 @@ public class BlockchainService {
     private final TransactionService transactionService;
 
     public BlockchainService(TransactionService transactionService) {
-        // this.web3j = Web3j.build(new HttpService("http://127.0.0.1:7545"));
+        this.web3j = Web3j.build(new HttpService("http://127.0.0.1:7545"));
         this.transactionService = transactionService;
     }
 

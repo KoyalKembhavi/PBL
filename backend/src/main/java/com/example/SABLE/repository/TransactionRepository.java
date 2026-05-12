@@ -1,6 +1,6 @@
-package com.example.sable.repository;
+package com.example.SABLE.repository;
 
-import com.example.sable.model.Transaction;
+import com.example.SABLE.model.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
