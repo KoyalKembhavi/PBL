@@ -57,5 +57,27 @@ public class TransactionController {
     public ResponseEntity<String> test() {
         return ResponseEntity.ok("Backend Working");
     }
+
+    @PutMapping("/{transactionId}/tamper")
+    public ResponseEntity<Transaction> tamperTransaction(@PathVariable String transactionId, @RequestParam Double amount) {
+        Transaction tx = transactionService.getTransactionByTransactionId(transactionId);
+        tx.setAmount(amount);
+        // Intentionally save using the repository/service without recalculating the integrity hash
+        return ResponseEntity.ok(transactionService.save(tx));
+    }
+
+    @PutMapping("/{transactionId}/restore")
+    public ResponseEntity<Transaction> restoreTransaction(@PathVariable String transactionId) {
+        try {
+            Transaction restored = blockchainService.restoreTransaction(transactionId);
+            return ResponseEntity.ok(restored);
+        } catch (Exception e) {
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Failed to restore transaction from blockchain: " + e.getMessage(),
+                    e
+            );
+        }
+    }
 }
 

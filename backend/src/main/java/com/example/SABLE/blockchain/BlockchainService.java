@@ -265,5 +265,28 @@ public class BlockchainService {
         }
         return result;
     }
+
+    public Transaction restoreTransaction(String transactionId) throws Exception {
+        Transaction tx = transactionService.getTransactionByTransactionId(transactionId);
+        
+        if (!tx.isOnChain() || tx.getBlockchainTxHash() == null || tx.getBlockchainTxHash().isBlank()) {
+            throw new IllegalStateException("Transaction is not on the blockchain. Cannot restore.");
+        }
+
+        var resp = web3j.ethGetTransactionByHash(tx.getBlockchainTxHash()).send();
+        var onChainTx = resp.getTransaction().orElseThrow(() -> 
+            new IllegalStateException("On-chain transaction not found for hash: " + tx.getBlockchainTxHash())
+        );
+
+        BigInteger onChainWei = onChainTx.getValue();
+        if (onChainWei != null) {
+            BigDecimal ethValue = Convert.fromWei(new BigDecimal(onChainWei), Convert.Unit.ETHER);
+            tx.setAmount(ethValue.doubleValue());
+            // Intentionally bypassing re-computation of the hash so that it naturally matches the original hash again
+            return transactionService.save(tx);
+        }
+        
+        throw new IllegalStateException("Blockchain transaction had no value to restore.");
+    }
 }
 

@@ -16,6 +16,45 @@ if (document.getElementById("landing-page")) {
 }
 
 // =========================
+// TAMPERING DEMONSTRATION LOGIC
+// =========================
+
+async function tamperTransaction(transactionId, currentAmount) {
+    const newAmount = prompt(`Simulate Hacker Attack!\n\nEnter the tampered amount (Original: $${currentAmount}):`, "9999");
+    if (!newAmount || newAmount == currentAmount) return;
+
+    try {
+        await apiRequest(`/api/transactions/${transactionId}/tamper?amount=${newAmount}`, {
+            method: "PUT",
+            auth: true
+        });
+        alert(`SUCCESS! Database record for ${transactionId.substring(0, 8)} has been maliciously altered to $${newAmount}. The Blockchain integrity hash was bypassed!\n\nGo to the Audit Panel to see the tampering detected.`);
+        window.location.reload();
+    } catch (e) {
+        alert("Failed to tamper: " + e.message);
+    }
+}
+
+async function restoreTransaction(transactionId) {
+    if (!confirm("Auto-Heal Protocol Initiated.\n\nThe system will now query the immutable Ganache Blockchain, extract the true transaction amount, and permanently repair the compromised database. Proceed?")) return;
+
+    try {
+        await apiRequest(`/api/transactions/${transactionId}/restore`, {
+            method: "PUT",
+            auth: true
+        });
+        alert(`SUCCESS! The database has been successfully repaired using the Blockchain's immutable record!`);
+        window.location.reload();
+    } catch (e) {
+        alert("Failed to auto-heal: " + e.message);
+    }
+}
+
+// =========================
+// RENDER AUDIT TABLE
+// =========================
+
+// =========================
 // Backend API integration
 // =========================
 // Use `var` to avoid temporal-dead-zone issues across page scripts.
@@ -460,8 +499,22 @@ async function loadRecentBlocks() {
         return;
     }
 
+    const user = getCurrentUser();
+    const isAdmin = user && (user.role || "").toUpperCase() === "ADMIN";
+
     recent.forEach(tx => {
         const when = tx.timestamp ? new Date(tx.timestamp).toLocaleString() : "";
+
+        let actionButtons = "";
+        if (isAdmin) {
+            actionButtons = `
+                <div class="mt-2 flex gap-2">
+                    <button onclick="tamperTransaction('${tx.transactionId}', ${tx.amount})" class="px-3 py-1 bg-red-500/20 text-red-400 hover:bg-red-500/40 rounded text-xs transition border border-red-500/30">Simulate Hack</button>
+                    <button onclick="restoreTransaction('${tx.transactionId}')" class="px-3 py-1 bg-green-500/20 text-green-400 hover:bg-green-500/40 rounded text-xs transition border border-green-500/30">Auto-Heal from Blockchain</button>
+                </div>
+            `;
+        }
+
         container.innerHTML += `
             <div class="flex justify-between items-center p-4 bg-white/5 rounded-lg border border-white/10">
                 <div>
@@ -471,6 +524,7 @@ async function loadRecentBlocks() {
                     <div class="text-sm text-white/70">
                         ${tx.sender || ""} → ${tx.receiver || ""} • ${Number(tx.amount || 0).toFixed(4)} ETH
                     </div>
+                    ${actionButtons}
                 </div>
                 <div class="text-right text-sm text-white/70">
                     ${when}
