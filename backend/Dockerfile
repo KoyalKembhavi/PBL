@@ -4,7 +4,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 # Compile down to java 21 for wider compatibility (in case java 25 image is missing)
-RUN mvn clean package -DskipTests -Dmaven.compiler.release=21
+RUN mvn clean package -DskipTests
 
 # Stage 2: Run the application
 FROM eclipse-temurin:21-jre
