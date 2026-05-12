@@ -63,7 +63,23 @@ public class BlockchainService {
         return receipt.getTransactionHash();
     }
 
+    private void checkAndHandleGanacheReset() {
+        try {
+            BigInteger latestBlock = web3j.ethBlockNumber().send().getBlockNumber();
+            if (latestBlock.equals(BigInteger.ZERO)) {
+                List<Transaction> all = transactionService.getAllTransactions();
+                boolean hasOnChain = all.stream().anyMatch(Transaction::isOnChain);
+                if (hasOnChain) {
+                    transactionService.deleteAllTransactions();
+                }
+            }
+        } catch (Exception e) {
+            // Ignore if ganache is unreachable
+        }
+    }
+
     public void syncAllTransactionsToBlockchain() throws Exception {
+        checkAndHandleGanacheReset();
         List<Transaction> transactions = transactionService.getUnsyncedTransactions();
         Credentials credentials = Credentials.create(senderPrivateKey);
         for (Transaction tx : transactions) {
@@ -94,6 +110,7 @@ public class BlockchainService {
     }
 
     public List<GanacheBlockDto> getRecentBlocks(int limit) throws Exception {
+        checkAndHandleGanacheReset();
         int safeLimit = Math.max(1, Math.min(limit, 200));
 
         BigInteger latest = web3j.ethBlockNumber().send().getBlockNumber();
@@ -140,6 +157,7 @@ public class BlockchainService {
     }
 
     public BlockchainVerificationDto verifyBlockchainAndDatabase(int blockLimit) throws Exception {
+        checkAndHandleGanacheReset();
         BlockchainVerificationDto result = new BlockchainVerificationDto();
 
         // 1) Verify chain linkage for the returned segment of chain.
