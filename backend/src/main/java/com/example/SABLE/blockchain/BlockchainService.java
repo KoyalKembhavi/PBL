@@ -7,6 +7,7 @@ import com.example.SABLE.dto.TransactionIntegrityFindingDto;
 import com.example.SABLE.integrity.TransactionIntegritySnapshot;
 import com.example.SABLE.model.Transaction;
 import com.example.SABLE.service.TransactionService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.WalletUtils;
@@ -25,20 +26,22 @@ import java.util.Set;
 
 @Service
 public class BlockchainService {
-    private static final String SENDER_PRIVATE_KEY =
-            "0xe0396dd66930d63f462627faa75345913890d5476f4441b2bfb639a8a838f51f";
+
+    @Value("${blockchain.sender-private-key}")
+    private String senderPrivateKey;
 
     private final Web3j web3j;
     private final TransactionService transactionService;
 
-    public BlockchainService(TransactionService transactionService) {
-        this.web3j = Web3j.build(new HttpService("http://127.0.0.1:7545"));
+    public BlockchainService(TransactionService transactionService,
+                             @Value("${blockchain.url}") String blockchainUrl) {
+        this.web3j = Web3j.build(new HttpService(blockchainUrl));
         this.transactionService = transactionService;
     }
 
     public String sendTransaction(String transactionId) throws Exception {
         Transaction tx = transactionService.getTransactionByTransactionId(transactionId);
-        Credentials credentials = Credentials.create(SENDER_PRIVATE_KEY);
+        Credentials credentials = Credentials.create(senderPrivateKey);
 
         String toAddress = tx.getReceiver();
         if (!WalletUtils.isValidAddress(toAddress)) {
@@ -62,7 +65,7 @@ public class BlockchainService {
 
     public void syncAllTransactionsToBlockchain() throws Exception {
         List<Transaction> transactions = transactionService.getUnsyncedTransactions();
-        Credentials credentials = Credentials.create(SENDER_PRIVATE_KEY);
+        Credentials credentials = Credentials.create(senderPrivateKey);
         for (Transaction tx : transactions) {
             try {
                 String toAddress = tx.getReceiver();
